@@ -1,4 +1,5 @@
 export const siteConfig = {
+  name: "Symbolradar",
   youtubeChannels: [
     {
       name: "Jonathan Pageau",
@@ -16,48 +17,61 @@ export const siteConfig = {
     },
   ],
   people: [
+    { name: "Matthieu Pageau" },
+    { name: "Jonathan Pageau" },
+    { name: "Jean-Philippe Marceau" },
+  ],
+  officialArticles: [
     {
-      name: "Matthieu Pageau",
-      role: "Author · Biblical Symbolism",
-      monogram: "MP",
-      primaryUrl: "https://substack.com/@matthieupageau",
-      youtubeSearch:
-        "https://www.youtube.com/results?search_query=%22Matthieu+Pageau%22+podcast+OR+interview",
-      xSearch:
-        "https://x.com/search?q=%22Matthieu%20Pageau%22&src=typed_query&f=live",
+      title: "The Chiastic Structure of the Rosary",
+      description:
+        "The Rosary follows a chiastic structure at several levels: the Hail Mary, its mysteries, and the week.",
+      url: "https://www.thesymbolicworld.com/content/the-chiastic-structure-of-the-rosary",
+      author: "Jean-Philippe Marceau",
+      publishedAt: "2026-06-17T00:00:00.000Z",
     },
     {
-      name: "Jonathan Pageau",
-      role: "Artist · The Symbolic World",
-      monogram: "JP",
-      primaryUrl: "https://www.youtube.com/c/JonathanPageau",
-      youtubeSearch:
-        "https://www.youtube.com/results?search_query=%22Jonathan+Pageau%22+podcast+OR+interview",
-      xSearch:
-        "https://x.com/search?q=%22Jonathan%20Pageau%22&src=typed_query&f=live",
+      title:
+        "Hazarding to Turn a Mirror to the Beauty of Snow White and the Widow Queen",
+      description:
+        "An essay on beauty, chaos, and the symbolic framing of Jonathan Pageau's Snow White and the Widow Queen.",
+      url: "https://www.thesymbolicworld.com/content/hazarding-to-turn-a-mirror-to-the-beauty-of-snow-white-and-the-widow-queen",
+      author: "Cormac Jones",
+      publishedAt: "2026-05-19T00:00:00.000Z",
     },
     {
-      name: "Jean-Philippe Marceau",
-      role: "Author · Podcasts",
-      monogram: "JM",
-      primaryUrl:
-        "https://www.youtube.com/channel/UCZzlvx0HHYiPOJTEOU399WA",
-      youtubeSearch:
-        "https://www.youtube.com/results?search_query=%22Jean-Philippe+Marceau%22+podcast+OR+interview",
-      xSearch:
-        "https://x.com/search?q=%22Jean-Philippe%20Marceau%22&src=typed_query&f=live",
+      title: "Rome Cut Off, Israel Regrafted",
+      description:
+        "Romans 11, Cain and Abel, technology, and the demographic questions facing industrial societies.",
+      url: "https://www.thesymbolicworld.com/content/rome-cut-off-israel-regrafted",
+      author: "Jean-Philippe Marceau",
+      publishedAt: "2026-05-11T00:00:00.000Z",
     },
   ],
+  articleIndexUrl:
+    "https://www.thesymbolicworld.com/content-categories/articles",
   xProfiles: [
+    {
+      name: "Jonathan Pageau",
+      handle: "PageauJonathan",
+      url: "https://x.com/PageauJonathan",
+    },
     {
       name: "Matthieu Pageau",
       handle: "PageauMatthieu",
       url: "https://x.com/PageauMatthieu",
     },
+  ],
+  socialProfiles: [
     {
+      network: "Instagram",
       name: "Jonathan Pageau",
-      handle: "PageauJonathan",
-      url: "https://x.com/PageauJonathan",
+      url: "https://www.instagram.com/jonathan.pageau/?hl=en",
+    },
+    {
+      network: "Facebook",
+      name: "The Symbolic World",
+      url: "https://www.facebook.com/TheSymbolicWorld",
     },
   ],
 } as const;

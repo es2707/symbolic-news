@@ -7,14 +7,15 @@ Jean-Philippe Marceau, and The Symbolic World.
 
 - YouTube channel feeds for Jonathan Pageau and Jean-Philippe Marceau
 - Matthieu Pageau's Substack feed
-- Google News RSS for broader mentions
-- Official embedded X profile timelines
-- Optional YouTube Data API discovery of guest appearances
+- Selected official articles from The Symbolic World
+- Official embedded X profile timelines and verified Instagram/Facebook links
+- Optional YouTube Data API discovery of relevant English-language videos
 
 Sources are cached for one hour. Full articles and videos are not copied; the
 site displays metadata, short excerpts, and links to the original sources.
-YouTube discovery searches each followed person separately, prioritizes recent
-results, and verifies that the full name appears in the result metadata.
+YouTube discovery searches each followed person separately. Results from
+outside the official channels must be English, include the full name, and match
+the site's subject area. Official channel feeds are not language-filtered.
 
 ## Optional YouTube key
 

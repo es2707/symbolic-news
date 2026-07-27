@@ -1,9 +1,15 @@
 import { siteConfig } from "../config.ts";
 
-export type FeedSource = "youtube" | "substack" | "mention";
+export type FeedSource =
+  | "youtube"
+  | "discovery"
+  | "substack"
+  | "symbolic-world";
+export type FeedKind = "video" | "article";
 
 export type FeedItem = {
   id: string;
+  kind: FeedKind;
   source: FeedSource;
   label: string;
   title: string;
@@ -28,26 +34,31 @@ export async function loadFeed(): Promise<LoadResult> {
     ...siteConfig.substackFeeds.map((feed) =>
       loadSubstack(feed.url, feed.name),
     ),
-    loadMentions(),
     loadYouTubeDiscoveries(),
   ];
 
   const results = await Promise.allSettled(tasks);
   const warnings: string[] = [];
-  const items = results.flatMap((result, index) => {
+  const loadedItems = results.flatMap((result, index) => {
     if (result.status === "fulfilled") return result.value;
     warnings.push(`Source ${index + 1} is temporarily unavailable.`);
     return [];
   });
 
   return {
-    items: normalizeFeedItems(items),
+    items: normalizeFeedItems([
+      ...loadedItems,
+      ...loadOfficialArticles(),
+    ]),
     generatedAt: new Date().toISOString(),
     warnings,
   };
 }
 
-export function normalizeFeedItems(items: FeedItem[], limit = 45): FeedItem[] {
+export function normalizeFeedItems(
+  items: FeedItem[],
+  limit = 60,
+): FeedItem[] {
   const seenIds = new Set<string>();
   const seenUrls = new Set<string>();
   const unique: FeedItem[] = [];
@@ -63,17 +74,11 @@ export function normalizeFeedItems(items: FeedItem[], limit = 45): FeedItem[] {
   }
 
   return unique
-    .sort((a, b) => {
-      const guestPriority =
-        Number(b.label === "Guest appearance") -
-        Number(a.label === "Guest appearance");
-      if (guestPriority !== 0) return guestPriority;
-
-      return (
+    .sort(
+      (a, b) =>
         new Date(b.publishedAt).getTime() -
-        new Date(a.publishedAt).getTime()
-      );
-    })
+        new Date(a.publishedAt).getTime(),
+    )
     .slice(0, limit);
 }
 
@@ -101,6 +106,9 @@ async function loadYouTubeDiscoveries(): Promise<FeedItem[]> {
   if (!apiKey) return [];
 
   const publishedAfter = discoveryWindowStart();
+  const officialChannelIds = new Set(
+    siteConfig.youtubeChannels.map((channel) => channel.channelId),
+  );
   const searches = siteConfig.people.map(async (person) => {
     const searchUrl = new URL("https://www.googleapis.com/youtube/v3/search");
     searchUrl.search = new URLSearchParams({
@@ -110,56 +118,70 @@ async function loadYouTubeDiscoveries(): Promise<FeedItem[]> {
       maxResults: "20",
       publishedAfter,
       q: person.name,
+      relevanceLanguage: "en",
+      regionCode: "US",
       key: apiKey,
     }).toString();
 
     const response = await fetch(searchUrl, { next: { revalidate: 3600 } });
-    if (!response.ok) throw new Error(`YouTube search returned ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`YouTube search returned ${response.status}`);
+    }
 
     const data = (await response.json()) as {
       items?: Array<{
         id?: { videoId?: string };
         snippet?: {
+          channelId?: string;
           channelTitle?: string;
           description?: string;
           publishedAt?: string;
-          thumbnails?: { high?: { url?: string }; medium?: { url?: string } };
+          thumbnails?: {
+            high?: { url?: string };
+            medium?: { url?: string };
+          };
           title?: string;
         };
       }>;
     };
 
-    return (data.items ?? []).flatMap((result) => {
-      const videoId = result.id?.videoId;
-      const snippet = result.snippet;
-      if (!videoId || !snippet?.title || !snippet.publishedAt) return [];
-      if (
-        !matchesPersonMention(
-          `${snippet.title} ${snippet.description ?? ""}`,
-          person.name,
-        )
-      ) {
-        return [];
-      }
+    return (data.items ?? [])
+      .flatMap((result) => {
+        const videoId = result.id?.videoId;
+        const snippet = result.snippet;
+        if (!videoId || !snippet?.title || !snippet.publishedAt) return [];
 
-      return [
-        {
-          id: `discovery:${videoId}`,
-          source: "mention" as const,
-          label: "Guest appearance",
-          title: clean(snippet.title),
-          description: clean(snippet.description ?? "").slice(0, 220),
-          url: `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`,
-          imageUrl: safeImage(
-            snippet.thumbnails?.high?.url ??
-              snippet.thumbnails?.medium?.url ??
-              "",
-          ),
-          author: clean(snippet.channelTitle ?? "YouTube"),
-          publishedAt: validDate(snippet.publishedAt),
-        },
-      ];
-    }).slice(0, 6);
+        const text = `${snippet.title} ${snippet.description ?? ""}`;
+        const isOfficial = officialChannelIds.has(snippet.channelId ?? "");
+        if (
+          !isOfficial &&
+          (!matchesPersonMention(text, person.name) ||
+            !isLikelyEnglish(text) ||
+            !matchesDiscoveryContext(text))
+        ) {
+          return [];
+        }
+
+        return [
+          {
+            id: `discovery:${videoId}`,
+            kind: "video" as const,
+            source: isOfficial ? ("youtube" as const) : ("discovery" as const),
+            label: isOfficial ? "Official video" : "External video",
+            title: clean(snippet.title),
+            description: clean(snippet.description ?? "").slice(0, 220),
+            url: `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`,
+            imageUrl: safeImage(
+              snippet.thumbnails?.high?.url ??
+                snippet.thumbnails?.medium?.url ??
+                "",
+            ),
+            author: clean(snippet.channelTitle ?? "YouTube"),
+            publishedAt: validDate(snippet.publishedAt),
+          },
+        ];
+      })
+      .slice(0, 6);
   });
 
   const results = await Promise.allSettled(searches);
@@ -177,6 +199,111 @@ function discoveryWindowStart() {
 
 export function matchesPersonMention(value: string, personName: string) {
   return normalizeSearchText(value).includes(normalizeSearchText(personName));
+}
+
+export function matchesDiscoveryContext(value: string) {
+  const text = normalizeSearchText(value);
+  const indicators = [
+    "bible",
+    "biblical",
+    "christian",
+    "conversation",
+    "cosmos",
+    "genesis",
+    "interview",
+    "language of creation",
+    "metaphysics",
+    "orthodox",
+    "podcast",
+    "religion",
+    "review",
+    "seminar",
+    "symbolic",
+    "symbolism",
+    "theology",
+  ];
+
+  return indicators.some((indicator) => text.includes(indicator));
+}
+
+export function isLikelyEnglish(value: string) {
+  const original = clean(value);
+  const words = normalizeSearchText(original).split(" ").filter(Boolean);
+  const englishSignals = new Set([
+    "a",
+    "about",
+    "and",
+    "are",
+    "as",
+    "at",
+    "biblical",
+    "by",
+    "conversation",
+    "for",
+    "from",
+    "how",
+    "in",
+    "interview",
+    "is",
+    "language",
+    "of",
+    "on",
+    "podcast",
+    "symbolic",
+    "symbolism",
+    "that",
+    "the",
+    "this",
+    "to",
+    "what",
+    "why",
+    "with",
+  ]);
+  const nonEnglishSignals = new Set([
+    "avec",
+    "como",
+    "da",
+    "dans",
+    "das",
+    "de",
+    "del",
+    "des",
+    "dos",
+    "du",
+    "et",
+    "fonte",
+    "la",
+    "las",
+    "le",
+    "les",
+    "los",
+    "não",
+    "para",
+    "por",
+    "pour",
+    "que",
+    "sobre",
+    "uma",
+    "une",
+  ]);
+  const englishScore = words.filter((word) => englishSignals.has(word)).length;
+  const nonEnglishScore = words.filter((word) =>
+    nonEnglishSignals.has(word),
+  ).length;
+  const letters = [...original].filter((character) =>
+    /\p{L}/u.test(character),
+  );
+  const asciiLetters = letters.filter((character) =>
+    /[a-z]/i.test(character),
+  );
+  const mostlyLatinAscii =
+    letters.length > 0 && asciiLetters.length / letters.length >= 0.85;
+
+  return (
+    mostlyLatinAscii &&
+    englishScore >= 2 &&
+    englishScore >= nonEnglishScore
+  );
 }
 
 function normalizeSearchText(value: string) {
@@ -203,14 +330,17 @@ async function loadYouTube(
       `https://www.youtube.com/watch?v=${videoId}`;
     return {
       id: `youtube:${videoId}`,
+      kind: "video",
       source: "youtube",
-      label: "Video",
+      label: "Official video",
       title: clean(value(entry, "title")),
       description: clean(value(entry, "media:description")).slice(0, 220),
       url: safeUrl(url, "https://www.youtube.com/"),
       imageUrl:
         safeImage(attribute(entry, "media:thumbnail", "url")) ||
-        (videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : undefined),
+        (videoId
+          ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+          : undefined),
       author: clean(value(entry, "name")) || channelName,
       publishedAt: validDate(value(entry, "published")),
     };
@@ -229,8 +359,9 @@ async function loadSubstack(
       value(item, "content:encoded") || value(item, "description");
     return {
       id: `substack:${link || index}`,
+      kind: "article",
       source: "substack",
-      label: "Essay",
+      label: "Substack essay",
       title: clean(value(item, "title")),
       description: clean(richText).slice(0, 240),
       url: safeUrl(link, "https://substack.com/@matthieupageau"),
@@ -241,30 +372,14 @@ async function loadSubstack(
   });
 }
 
-async function loadMentions(): Promise<FeedItem[]> {
-  const query = encodeURIComponent(
-    '"Jonathan Pageau" OR "Matthieu Pageau" OR "Jean-Philippe Marceau"',
-  );
-  const xml = await fetchText(
-    `https://news.google.com/rss/search?q=${query}&hl=en&gl=US&ceid=US:en`,
-  );
-
-  return blocks(xml, "item").slice(0, 18).map((item, index) => {
-    const title = clean(value(item, "title"));
-    const source = clean(value(item, "source"));
-    return {
-      id: `mention:${index}:${title}`,
-      source: "mention",
-      label: "Mention",
-      title,
-      description: source
-        ? `Found via ${source}. Open the original result to read or watch more.`
-        : "A new result from an external channel or publication.",
-      url: safeUrl(clean(value(item, "link")), "https://news.google.com/"),
-      author: source || "External source",
-      publishedAt: validDate(value(item, "pubDate")),
-    };
-  });
+function loadOfficialArticles(): FeedItem[] {
+  return siteConfig.officialArticles.map((article) => ({
+    id: `symbolic-world:${article.url}`,
+    kind: "article",
+    source: "symbolic-world",
+    label: "The Symbolic World",
+    ...article,
+  }));
 }
 
 async function fetchText(url: string) {
@@ -280,9 +395,14 @@ async function fetchText(url: string) {
 }
 
 function blocks(xml: string, tag: string) {
-  return [...xml.matchAll(new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tag}>`, "gi"))].map(
-    (match) => match[1],
-  );
+  return [
+    ...xml.matchAll(
+      new RegExp(
+        `<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tag}>`,
+        "gi",
+      ),
+    ),
+  ].map((match) => match[1]);
 }
 
 function value(xml: string, tag: string) {
@@ -332,7 +452,9 @@ function decodeEntities(input: string) {
 
 function validDate(value: string) {
   const date = new Date(clean(value));
-  return Number.isNaN(date.getTime()) ? new Date(0).toISOString() : date.toISOString();
+  return Number.isNaN(date.getTime())
+    ? new Date(0).toISOString()
+    : date.toISOString();
 }
 
 export function safeUrl(value: string, fallback: string) {

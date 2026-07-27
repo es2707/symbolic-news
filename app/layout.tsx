@@ -9,9 +9,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: base,
-    title: "Symbolradar — Pageau, Marceau & The Symbolic World",
+    title: "Symbolradar — Videos, essays and social posts",
     description:
-      "A living feed of new videos, essays, conversations, and mentions concerning Matthieu Pageau, Jonathan Pageau, and Jean-Philippe Marceau.",
+      "A current index of videos, essays, and official social posts about symbolism, religion, and culture.",
     icons: {
       icon: "/favicon.svg",
       shortcut: "/favicon.svg",
@@ -25,7 +25,8 @@ export async function generateMetadata(): Promise<Metadata> {
       "Jean-Philippe Marceau",
       "The Symbolic World",
       "symbolism",
-      "podcast guest appearances",
+      "essays",
+      "videos",
     ],
     robots: {
       index: true,
@@ -41,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: "Symbolradar",
       description:
-        "Follow the pattern as it unfolds — videos, essays, conversations, and mentions gathered in one place.",
+        "Three current streams: videos, essays, and official social posts.",
       type: "website",
       url: "/",
       images: [
@@ -49,14 +50,14 @@ export async function generateMetadata(): Promise<Metadata> {
           url: new URL("/og.png", base),
           width: 1672,
           height: 941,
-          alt: "Symbolradar — Follow the pattern as it unfolds",
+          alt: "Symbolradar — videos, essays and social posts",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
       title: "Symbolradar",
-      description: "A living archive of symbolic thought.",
+      description: "Videos, essays and official social posts in one place.",
       images: [new URL("/og.png", base)],
     },
   };

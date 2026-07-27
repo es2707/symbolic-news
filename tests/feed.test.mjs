@@ -4,6 +4,8 @@ import test from "node:test";
 import {
   canonicalUrl,
   clean,
+  isLikelyEnglish,
+  matchesDiscoveryContext,
   matchesPersonMention,
   normalizeFeedItems,
   safeImage,
@@ -13,6 +15,7 @@ import {
 function item(overrides = {}) {
   return {
     id: "one",
+    kind: "video",
     source: "youtube",
     label: "Video",
     title: "Title",
@@ -57,7 +60,7 @@ test("sorts newest first and respects the result limit", () => {
   assert.deepEqual(result.map(({ id }) => id), ["new"]);
 });
 
-test("places guest appearances before newer regular items", () => {
+test("sorts every item strictly by publication date", () => {
   const result = normalizeFeedItems([
     item({
       id: "new-video",
@@ -66,14 +69,14 @@ test("places guest appearances before newer regular items", () => {
     }),
     item({
       id: "guest",
-      source: "mention",
+      source: "discovery",
       label: "Guest appearance",
       url: "https://example.com/guest",
       publishedAt: "2026-01-01T00:00:00.000Z",
     }),
   ]);
 
-  assert.deepEqual(result.map(({ id }) => id), ["guest", "new-video"]);
+  assert.deepEqual(result.map(({ id }) => id), ["new-video", "guest"]);
 });
 
 test("normalizes tracking parameters without removing useful query data", () => {
@@ -122,5 +125,41 @@ test("rejects unrelated YouTube search results", () => {
       "Jonathan Pageau",
     ),
     false,
+  );
+});
+
+test("keeps English discoveries and rejects non-English results", () => {
+  assert.equal(
+    isLikelyEnglish(
+      "A conversation with Matthieu Pageau about biblical symbolism and the language of creation.",
+    ),
+    true,
+  );
+  assert.equal(
+    isLikelyEnglish(
+      "Padrões universais e a metáfora da realidade. Fonte base: Jonathan Pageau.",
+    ),
+    false,
+  );
+  assert.equal(
+    isLikelyEnglish(
+      "Les avantages du langage symbolique pour comprendre le mariage.",
+    ),
+    false,
+  );
+});
+
+test("rejects same-name discoveries outside the tracked subject", () => {
+  assert.equal(
+    matchesDiscoveryContext(
+      "Matthieu Pageau presents an ambisonic student audio project.",
+    ),
+    false,
+  );
+  assert.equal(
+    matchesDiscoveryContext(
+      "Matthieu Pageau discusses Genesis and biblical symbolism in this podcast.",
+    ),
+    true,
   );
 });
