@@ -23,6 +23,7 @@ function item(overrides = {}) {
     url: "https://example.com/story",
     author: "Author",
     publishedAt: "2026-01-01T00:00:00.000Z",
+    people: [],
     ...overrides,
   };
 }

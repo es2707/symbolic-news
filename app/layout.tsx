@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: base,
-    title: "Symbolradar — Videos, essays and social posts",
+    title: "Symbolic Search — Videos, essays and social posts",
     description:
       "A current index of videos, essays, and official social posts about symbolism, religion, and culture.",
     icons: {
@@ -40,25 +40,25 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     openGraph: {
-      title: "Symbolradar",
+      title: "Symbolic Search",
       description:
         "Three current streams: videos, essays, and official social posts.",
       type: "website",
       url: "/",
       images: [
         {
-          url: new URL("/og.png", base),
+          url: new URL("/og-symbolic-search.png", base),
           width: 1672,
           height: 941,
-          alt: "Symbolradar — videos, essays and social posts",
+          alt: "Symbolic Search — videos, essays and social posts",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Symbolradar",
+      title: "Symbolic Search",
       description: "Videos, essays and official social posts in one place.",
-      images: [new URL("/og.png", base)],
+      images: [new URL("/og-symbolic-search.png", base)],
     },
   };
 }

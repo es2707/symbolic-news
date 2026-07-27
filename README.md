@@ -17,6 +17,9 @@ YouTube discovery searches each followed person separately. Results from
 outside the official channels must be English, include the full name, and match
 the site's subject area. Official channel feeds are not language-filtered.
 
+The site includes archive pages for videos, essays, and social sources, plus a
+page for each configured person. Lists reveal older results in batches.
+
 ## Optional YouTube key
 
 Copy `.env.example` to `.env` for local use and set `YOUTUBE_API_KEY`.

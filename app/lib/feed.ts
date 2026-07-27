@@ -18,6 +18,7 @@ export type FeedItem = {
   imageUrl?: string;
   author: string;
   publishedAt: string;
+  people: string[];
 };
 
 type LoadResult = {
@@ -178,6 +179,7 @@ async function loadYouTubeDiscoveries(): Promise<FeedItem[]> {
             ),
             author: clean(snippet.channelTitle ?? "YouTube"),
             publishedAt: validDate(snippet.publishedAt),
+            people: [person.slug],
           },
         ];
       })
@@ -343,6 +345,11 @@ async function loadYouTube(
           : undefined),
       author: clean(value(entry, "name")) || channelName,
       publishedAt: validDate(value(entry, "published")),
+      people: [
+        siteConfig.youtubeChannels.find(
+          (channel) => channel.channelId === channelId,
+        )?.personSlug ?? "",
+      ].filter(Boolean),
     };
   });
 }
@@ -368,6 +375,10 @@ async function loadSubstack(
       imageUrl: safeImage(imageFromHtml(richText)),
       author: clean(value(item, "dc:creator")) || publicationName,
       publishedAt: validDate(value(item, "pubDate")),
+      people: [
+        siteConfig.substackFeeds.find((feed) => feed.url === feedUrl)
+          ?.personSlug ?? "",
+      ].filter(Boolean),
     };
   });
 }
@@ -378,6 +389,7 @@ function loadOfficialArticles(): FeedItem[] {
     kind: "article",
     source: "symbolic-world",
     label: "The Symbolic World",
+    people: [...article.personSlugs],
     ...article,
   }));
 }

@@ -1,5 +1,7 @@
-import Script from "next/script";
 import { headers } from "next/headers";
+import { ContentList } from "./components/ContentList";
+import { SiteFooter, SiteHeader } from "./components/SiteChrome";
+import { SocialStreams } from "./components/SocialStreams";
 import { siteConfig } from "./config";
 import type { FeedItem } from "./lib/feed";
 import { loadFeed } from "./lib/feed";
@@ -11,10 +13,8 @@ export default async function Home() {
   const { items, generatedAt, warnings } = await loadFeed();
   const requestHeaders = await headers();
   const siteUrl = requestSiteUrl(requestHeaders);
-  const videos = items.filter((item) => item.kind === "video").slice(0, 8);
-  const articles = items
-    .filter((item) => item.kind === "article")
-    .slice(0, 8);
+  const videos = items.filter((item) => item.kind === "video");
+  const articles = items.filter((item) => item.kind === "article");
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -22,7 +22,7 @@ export default async function Home() {
     url: `${siteUrl}/`,
     inLanguage: "en",
     description:
-      "A current index of videos, essays, and official social posts about symbolism, religion, and culture.",
+      "Browse videos, essays and social posts from selected sources.",
   };
 
   return (
@@ -34,35 +34,11 @@ export default async function Home() {
         }}
       />
 
-      <header className="site-header">
-        <a className="brand" href="#top" aria-label="Symbolradar, back to top">
-          <span className="brand-mark" aria-hidden="true">
-            <i />
-          </span>
-          <span>{siteConfig.name}</span>
-        </a>
-        <nav aria-label="Content streams">
-          <a href="#videos">Videos</a>
-          <a href="#essays">Essays</a>
-          <a href="#social">Social</a>
-        </nav>
-        <span className="updated">
-          <i aria-hidden="true" />
-          Updated {formatUpdated(generatedAt)}
-        </span>
-      </header>
+      <SiteHeader updatedAt={generatedAt} />
 
-      <section className="intro">
-        <p className="kicker">A live source index</p>
-        <h1>
-          What is new,
-          <span>without the noise.</span>
-        </h1>
-        <p>
-          Three focused streams from official channels and carefully filtered
-          English-language discoveries. Every item links back to its original
-          publisher.
-        </p>
+      <section className="intro short-intro">
+        <h1>Symbolic Search</h1>
+        <p>Browse videos, essays and social posts from selected sources.</p>
       </section>
 
       {warnings.length > 0 && (
@@ -74,92 +50,54 @@ export default async function Home() {
 
       <section className="streams" aria-label="Latest content">
         <Stream
+          archiveUrl="/videos"
+          description="Official uploads and relevant English-language results."
           id="videos"
           index="01"
-          title="Videos"
-          description="Official uploads and relevant English-language appearances or mentions."
           items={videos}
+          title="Videos"
         />
 
         <Stream
+          archiveUrl="/essays"
+          description="Writing from official publications and author feeds."
           id="essays"
           index="02"
-          title="Essays"
-          description="Long-form writing from official publications and author feeds."
           items={articles}
-          footerLink={{
-            label: "Browse all Symbolic World articles",
-            url: siteConfig.articleIndexUrl,
-          }}
+          title="Essays"
         />
 
         <section className="stream social-stream" id="social">
           <StreamHeader
+            archiveUrl="/social"
+            description="Live X timelines and verified official profiles."
             index="03"
             title="Social"
-            description="Live X timelines and verified links to official profiles elsewhere."
           />
-
-          <div className="social-links" aria-label="Official social profiles">
-            {siteConfig.socialProfiles.map((profile) => (
-              <a
-                href={profile.url}
-                key={`${profile.network}:${profile.name}`}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <span>{profile.network}</span>
-                <strong>{profile.name}</strong>
-                <b aria-hidden="true">↗</b>
-              </a>
-            ))}
-          </div>
-
-          <div className="x-timelines">
-            {siteConfig.xProfiles.map((profile) => (
-              <article className="x-card" key={profile.handle}>
-                <header>
-                  <div>
-                    <span>X</span>
-                    <strong>@{profile.handle}</strong>
-                  </div>
-                  <a href={profile.url} rel="noreferrer" target="_blank">
-                    Open ↗
-                  </a>
-                </header>
-                <a
-                  className="twitter-timeline"
-                  data-chrome="noheader nofooter noborders transparent"
-                  data-height="430"
-                  data-theme="light"
-                  href={profile.url}
-                >
-                  Latest posts from @{profile.handle}
-                </a>
-              </article>
-            ))}
-          </div>
+          <SocialStreams />
+          <a className="stream-footer-link" href="/social">
+            View all social sources <span aria-hidden="true">→</span>
+          </a>
         </section>
       </section>
 
-      <footer>
-        <a className="brand footer-brand" href="#top">
-          <span className="brand-mark" aria-hidden="true">
-            <i />
-          </span>
-          <span>{siteConfig.name}</span>
-        </a>
-        <p>
-          Metadata and short excerpts only. All work belongs to its original
-          publishers.
-        </p>
-        <a href="#top">Back to top ↑</a>
-      </footer>
+      <section className="people-index" id="people">
+        <header>
+          <p className="kicker">People</p>
+          <h2>Browse by person</h2>
+        </header>
+        <div>
+          {siteConfig.people.map((person, index) => (
+            <a href={`/people/${person.slug}`} key={person.slug}>
+              <span>0{index + 1}</span>
+              <strong>{person.name}</strong>
+              <b aria-hidden="true">→</b>
+            </a>
+          ))}
+        </div>
+      </section>
 
-      <Script
-        src="https://platform.twitter.com/widgets.js"
-        strategy="lazyOnload"
-      />
+      <SiteFooter />
     </main>
   );
 }
@@ -170,35 +108,28 @@ function Stream({
   title,
   description,
   items,
-  footerLink,
+  archiveUrl,
 }: {
   id: string;
   index: string;
   title: string;
   description: string;
   items: FeedItem[];
-  footerLink?: { label: string; url: string };
+  archiveUrl: string;
 }) {
   return (
     <section className="stream" id={id}>
-      <StreamHeader index={index} title={title} description={description} />
-      <div className="stream-list">
-        {items.length > 0 ? (
-          items.map((item) => <StreamCard item={item} key={item.id} />)
-        ) : (
-          <p className="empty-state">No current items are available.</p>
-        )}
-      </div>
-      {footerLink && (
-        <a
-          className="stream-footer-link"
-          href={footerLink.url}
-          rel="noreferrer"
-          target="_blank"
-        >
-          {footerLink.label} <span aria-hidden="true">↗</span>
-        </a>
-      )}
+      <StreamHeader
+        archiveUrl={archiveUrl}
+        description={description}
+        index={index}
+        title={title}
+      />
+      <ContentList items={items} />
+      <a className="stream-footer-link" href={archiveUrl}>
+        View all {title.toLocaleLowerCase("en")}{" "}
+        <span aria-hidden="true">→</span>
+      </a>
     </section>
   );
 }
@@ -207,66 +138,22 @@ function StreamHeader({
   index,
   title,
   description,
+  archiveUrl,
 }: {
   index: string;
   title: string;
   description: string;
+  archiveUrl: string;
 }) {
   return (
     <header className="stream-heading">
       <span>{index}</span>
       <div>
-        <h2>{title}</h2>
+        <h2>
+          <a href={archiveUrl}>{title}</a>
+        </h2>
         <p>{description}</p>
       </div>
     </header>
   );
-}
-
-function StreamCard({ item }: { item: FeedItem }) {
-  return (
-    <article className={`stream-card ${item.kind}`}>
-      <a href={item.url} rel="noreferrer" target="_blank">
-        {item.imageUrl && (
-          <div className="card-media">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" loading="lazy" src={item.imageUrl} />
-          </div>
-        )}
-        <div className="card-content">
-          <p className="card-meta">
-            <span>{item.label}</span>
-            <time dateTime={item.publishedAt}>
-              {formatDate(item.publishedAt)}
-            </time>
-          </p>
-          <h3>{item.title}</h3>
-          <p className="card-description">{item.description}</p>
-          <p className="card-byline">
-            <span>{item.author}</span>
-            <b aria-hidden="true">↗</b>
-          </p>
-        </div>
-      </a>
-    </article>
-  );
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "Europe/Oslo",
-  }).format(new Date(value));
-}
-
-function formatUpdated(value: string) {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Oslo",
-  }).format(new Date(value));
 }
