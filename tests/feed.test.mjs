@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   canonicalUrl,
   clean,
+  matchesPersonMention,
   normalizeFeedItems,
   safeImage,
   safeUrl,
@@ -56,6 +57,25 @@ test("sorts newest first and respects the result limit", () => {
   assert.deepEqual(result.map(({ id }) => id), ["new"]);
 });
 
+test("places guest appearances before newer regular items", () => {
+  const result = normalizeFeedItems([
+    item({
+      id: "new-video",
+      url: "https://example.com/new-video",
+      publishedAt: "2026-03-01T00:00:00.000Z",
+    }),
+    item({
+      id: "guest",
+      source: "mention",
+      label: "Guest appearance",
+      url: "https://example.com/guest",
+      publishedAt: "2026-01-01T00:00:00.000Z",
+    }),
+  ]);
+
+  assert.deepEqual(result.map(({ id }) => id), ["guest", "new-video"]);
+});
+
 test("normalizes tracking parameters without removing useful query data", () => {
   assert.equal(
     canonicalUrl(
@@ -76,4 +96,31 @@ test("strips feed markup and only permits safe external URLs", () => {
     "https://i.ytimg.com/vi/abc/hqdefault.jpg",
   );
   assert.equal(safeImage("https://untrusted.example/image.jpg"), undefined);
+});
+
+test("matches full person names while tolerating punctuation differences", () => {
+  assert.equal(
+    matchesPersonMention(
+      "A conversation with Matthieu Pageau about Genesis",
+      "Matthieu Pageau",
+    ),
+    true,
+  );
+  assert.equal(
+    matchesPersonMention(
+      "Jean Philippe Marceau on language and symbolism",
+      "Jean-Philippe Marceau",
+    ),
+    true,
+  );
+});
+
+test("rejects unrelated YouTube search results", () => {
+  assert.equal(
+    matchesPersonMention(
+      "Alex O'Connor discusses symbolism with Chris Williamson",
+      "Jonathan Pageau",
+    ),
+    false,
+  );
 });

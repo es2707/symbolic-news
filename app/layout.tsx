@@ -1,42 +1,62 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { requestSiteUrl } from "./lib/site-url";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
-  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000";
-  const protocol =
-    requestHeaders.get("x-forwarded-proto") ??
-    (host.startsWith("localhost") ? "http" : "https");
-  const base = new URL(`${protocol}://${host}`);
+  const base = new URL(requestSiteUrl(requestHeaders));
 
   return {
     metadataBase: base,
     title: "Symbolradar — Pageau, Marceau & The Symbolic World",
     description:
-      "En levende strøm med nye videoer, tekster, samtaler og omtaler rundt Matthieu Pageau, Jonathan Pageau og Jean-Philippe Marceau.",
+      "A living feed of new videos, essays, conversations, and mentions concerning Matthieu Pageau, Jonathan Pageau, and Jean-Philippe Marceau.",
     icons: {
       icon: "/favicon.svg",
       shortcut: "/favicon.svg",
     },
+    alternates: {
+      canonical: "/",
+    },
+    keywords: [
+      "Matthieu Pageau",
+      "Jonathan Pageau",
+      "Jean-Philippe Marceau",
+      "The Symbolic World",
+      "symbolism",
+      "podcast guest appearances",
+    ],
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
     openGraph: {
       title: "Symbolradar",
       description:
-        "Følg mønsteret mens det utfolder seg — videoer, essays, samtaler og omtaler samlet på ett sted.",
+        "Follow the pattern as it unfolds — videos, essays, conversations, and mentions gathered in one place.",
       type: "website",
+      url: "/",
       images: [
         {
           url: new URL("/og.png", base),
           width: 1672,
           height: 941,
-          alt: "Symbolradar — Følg mønsteret mens det utfolder seg",
+          alt: "Symbolradar — Follow the pattern as it unfolds",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
       title: "Symbolradar",
-      description: "Et levende arkiv over symbolsk tenkning.",
+      description: "A living archive of symbolic thought.",
       images: [new URL("/og.png", base)],
     },
   };
@@ -65,7 +85,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="nb">
+    <html lang="en">
       <head>
         <meta httpEquiv="Content-Security-Policy" content={csp} />
         <meta name="theme-color" content="#efe9dd" />

@@ -6,10 +6,10 @@ import type { FeedItem, FeedSource } from "../lib/feed";
 type Filter = "all" | FeedSource;
 
 const filters: Array<{ value: Filter; label: string }> = [
-  { value: "all", label: "Alt" },
+  { value: "all", label: "All" },
   { value: "youtube", label: "YouTube" },
   { value: "substack", label: "Essays" },
-  { value: "mention", label: "Omtaler" },
+  { value: "mention", label: "Discoveries" },
 ];
 
 export function FeedExplorer({
@@ -24,13 +24,13 @@ export function FeedExplorer({
   const [visibleCount, setVisibleCount] = useState(9);
 
   const filtered = useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase("nb-NO");
+    const normalized = query.trim().toLocaleLowerCase("en");
     return items.filter((item) => {
       const matchesFilter = filter === "all" || item.source === filter;
       const matchesQuery =
         !normalized ||
         `${item.title} ${item.author} ${item.description}`
-          .toLocaleLowerCase("nb-NO")
+          .toLocaleLowerCase("en")
           .includes(normalized);
       return matchesFilter && matchesQuery;
     });
@@ -44,7 +44,7 @@ export function FeedExplorer({
   return (
     <div>
       <div className="feed-controls">
-        <div className="filters" aria-label="Filtrer innhold">
+        <div className="filters" aria-label="Filter content">
           {filters.map((item) => (
             <button
               aria-pressed={filter === item.value}
@@ -63,13 +63,13 @@ export function FeedExplorer({
           ))}
         </div>
         <label className="search">
-          <span className="sr-only">Søk i strømmen</span>
+          <span className="sr-only">Search the feed</span>
           <input
             onChange={(event) => {
               setQuery(event.target.value);
               setVisibleCount(9);
             }}
-            placeholder="Søk etter tema eller navn"
+            placeholder="Search by topic or name"
             type="search"
             value={query}
           />
@@ -79,7 +79,8 @@ export function FeedExplorer({
 
       {warnings.length > 0 && items.length > 0 ? (
         <p className="feed-warning">
-          Noen kilder svarte ikke akkurat nå. Resten av strømmen er oppdatert.
+          Some sources are temporarily unavailable. The rest of the feed is up
+          to date.
         </p>
       ) : null}
 
@@ -96,15 +97,15 @@ export function FeedExplorer({
               onClick={() => setVisibleCount((count) => count + 9)}
               type="button"
             >
-              Vis flere signaler <span aria-hidden="true">↓</span>
+              Show more signals <span aria-hidden="true">↓</span>
             </button>
           ) : null}
         </>
       ) : (
         <div className="empty-state">
           <span aria-hidden="true">◎</span>
-          <h3>Ingen treff akkurat her</h3>
-          <p>Prøv et annet søkeord eller velg «Alt».</p>
+          <h3>No results here</h3>
+          <p>Try another search term or choose “All”.</p>
         </div>
       )}
     </div>
@@ -114,7 +115,7 @@ export function FeedExplorer({
 function FeedCard({ item, featured }: { item: FeedItem; featured: boolean }) {
   return (
     <article className={`feed-card ${featured ? "featured" : ""}`}>
-      <a href={item.url} target="_blank" rel="noreferrer" aria-label={`${item.title}, åpne originalkilden`}>
+      <a href={item.url} target="_blank" rel="noreferrer" aria-label={`${item.title}, open the original source`}>
         <div className="card-media">
           {item.imageUrl ? (
             <img src={item.imageUrl} alt="" loading="lazy" />
@@ -132,9 +133,9 @@ function FeedCard({ item, featured }: { item: FeedItem; featured: boolean }) {
             <time dateTime={item.publishedAt}>{formatDate(item.publishedAt)}</time>
           </p>
           <h3>{item.title}</h3>
-          <p className="card-description">{item.description || "Åpne originalkilden for å se mer."}</p>
+          <p className="card-description">{item.description || "Open the original source to learn more."}</p>
           <span className="card-link">
-            Gå til originalen <b aria-hidden="true">↗</b>
+            View original <b aria-hidden="true">↗</b>
           </span>
         </div>
       </a>
@@ -143,7 +144,7 @@ function FeedCard({ item, featured }: { item: FeedItem; featured: boolean }) {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("nb-NO", {
+  return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
