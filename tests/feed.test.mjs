@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   canonicalUrl,
   clean,
+  matchesPersonMention,
   normalizeFeedItems,
   safeImage,
   safeUrl,
@@ -95,4 +96,31 @@ test("strips feed markup and only permits safe external URLs", () => {
     "https://i.ytimg.com/vi/abc/hqdefault.jpg",
   );
   assert.equal(safeImage("https://untrusted.example/image.jpg"), undefined);
+});
+
+test("matches full person names while tolerating punctuation differences", () => {
+  assert.equal(
+    matchesPersonMention(
+      "A conversation with Matthieu Pageau about Genesis",
+      "Matthieu Pageau",
+    ),
+    true,
+  );
+  assert.equal(
+    matchesPersonMention(
+      "Jean Philippe Marceau on language and symbolism",
+      "Jean-Philippe Marceau",
+    ),
+    true,
+  );
+});
+
+test("rejects unrelated YouTube search results", () => {
+  assert.equal(
+    matchesPersonMention(
+      "Alex O'Connor discusses symbolism with Chris Williamson",
+      "Jonathan Pageau",
+    ),
+    false,
+  );
 });

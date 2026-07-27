@@ -1,15 +1,39 @@
 import Script from "next/script";
+import { headers } from "next/headers";
 import { FeedExplorer } from "./components/FeedExplorer";
 import { siteConfig } from "./config";
 import { loadFeed } from "./lib/feed";
+import { requestSiteUrl } from "./lib/site-url";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const { items, generatedAt, warnings } = await loadFeed();
+  const requestHeaders = await headers();
+  const siteUrl = requestSiteUrl(requestHeaders);
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Symbolradar",
+    url: `${siteUrl}/`,
+    inLanguage: "en",
+    description:
+      "A living feed of new videos, essays, conversations, and mentions concerning Matthieu Pageau, Jonathan Pageau, and Jean-Philippe Marceau.",
+    about: siteConfig.people.map((person) => ({
+      "@type": "Person",
+      name: person.name,
+      url: person.primaryUrl,
+    })),
+  };
 
   return (
     <main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+        }}
+      />
       <header className="site-header">
         <a className="brand" href="#top" aria-label="Symbolradar, back to top">
           <span className="brand-mark" aria-hidden="true">

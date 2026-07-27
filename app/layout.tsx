@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { requestSiteUrl } from "./lib/site-url";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
-  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000";
-  const protocol =
-    requestHeaders.get("x-forwarded-proto") ??
-    (host.startsWith("localhost") ? "http" : "https");
-  const base = new URL(`${protocol}://${host}`);
+  const base = new URL(requestSiteUrl(requestHeaders));
 
   return {
     metadataBase: base,
@@ -19,11 +16,34 @@ export async function generateMetadata(): Promise<Metadata> {
       icon: "/favicon.svg",
       shortcut: "/favicon.svg",
     },
+    alternates: {
+      canonical: "/",
+    },
+    keywords: [
+      "Matthieu Pageau",
+      "Jonathan Pageau",
+      "Jean-Philippe Marceau",
+      "The Symbolic World",
+      "symbolism",
+      "podcast guest appearances",
+    ],
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
     openGraph: {
       title: "Symbolradar",
       description:
         "Follow the pattern as it unfolds — videos, essays, conversations, and mentions gathered in one place.",
       type: "website",
+      url: "/",
       images: [
         {
           url: new URL("/og.png", base),
