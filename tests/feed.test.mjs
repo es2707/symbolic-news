@@ -56,6 +56,25 @@ test("sorts newest first and respects the result limit", () => {
   assert.deepEqual(result.map(({ id }) => id), ["new"]);
 });
 
+test("places guest appearances before newer regular items", () => {
+  const result = normalizeFeedItems([
+    item({
+      id: "new-video",
+      url: "https://example.com/new-video",
+      publishedAt: "2026-03-01T00:00:00.000Z",
+    }),
+    item({
+      id: "guest",
+      source: "mention",
+      label: "Guest appearance",
+      url: "https://example.com/guest",
+      publishedAt: "2026-01-01T00:00:00.000Z",
+    }),
+  ]);
+
+  assert.deepEqual(result.map(({ id }) => id), ["guest", "new-video"]);
+});
+
 test("normalizes tracking parameters without removing useful query data", () => {
   assert.equal(
     canonicalUrl(

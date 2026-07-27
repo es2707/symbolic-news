@@ -1,33 +1,33 @@
 # Symbolradar
 
-En norsk, redaksjonell innholdsstrøm for Matthieu Pageau, Jonathan Pageau,
-Jean-Philippe Marceau og The Symbolic World.
+An editorial content feed for Matthieu Pageau, Jonathan Pageau,
+Jean-Philippe Marceau, and The Symbolic World.
 
-## Kilder
+## Sources
 
-- YouTube-kanalfeeder for Jonathan Pageau og Jean-Philippe Marceau
-- Matthieu Pageaus Substack-feed
-- Google News RSS for bredere omtaler
-- Offisielle X-profiltidslinjer
-- Valgfritt YouTube Data API-søk etter gjesteopptredener
+- YouTube channel feeds for Jonathan Pageau and Jean-Philippe Marceau
+- Matthieu Pageau's Substack feed
+- Google News RSS for broader mentions
+- Official embedded X profile timelines
+- Optional YouTube Data API discovery of guest appearances
 
-Kildene mellomlagres i én time. Hele artikler eller videoinnhold kopieres ikke;
-siden viser metadata, korte utdrag og lenker til originalkildene.
+Sources are cached for one hour. Full articles and videos are not copied; the
+site displays metadata, short excerpts, and links to the original sources.
 
-## Valgfri YouTube-nøkkel
+## Optional YouTube key
 
-Kopier `.env.example` til `.env` for lokal bruk og sett `YOUTUBE_API_KEY`.
-I produksjon skal nøkkelen legges inn som en skjult miljøverdi hos
-publiseringsplattformen. Den skal aldri ligge i kildekoden.
+Copy `.env.example` to `.env` for local use and set `YOUTUBE_API_KEY`.
+In production, store the key as a secret environment value on the hosting
+platform. Never commit it to source control.
 
-## Utvikling
+## Development
 
 ```text
 npm install
 npm run dev
 ```
 
-## Kontroll og bygg
+## Checks and build
 
 ```text
 npm run build

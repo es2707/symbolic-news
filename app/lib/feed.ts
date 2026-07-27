@@ -36,7 +36,7 @@ export async function loadFeed(): Promise<LoadResult> {
   const warnings: string[] = [];
   const items = results.flatMap((result, index) => {
     if (result.status === "fulfilled") return result.value;
-    warnings.push(`Kilde ${index + 1} svarte ikke akkurat nå.`);
+    warnings.push(`Source ${index + 1} is temporarily unavailable.`);
     return [];
   });
 
@@ -63,11 +63,17 @@ export function normalizeFeedItems(items: FeedItem[], limit = 45): FeedItem[] {
   }
 
   return unique
-    .sort(
-      (a, b) =>
+    .sort((a, b) => {
+      const guestPriority =
+        Number(b.label === "Guest appearance") -
+        Number(a.label === "Guest appearance");
+      if (guestPriority !== 0) return guestPriority;
+
+      return (
         new Date(b.publishedAt).getTime() -
-        new Date(a.publishedAt).getTime(),
-    )
+        new Date(a.publishedAt).getTime()
+      );
+    })
     .slice(0, limit);
 }
 
@@ -100,7 +106,7 @@ async function loadYouTubeDiscoveries(): Promise<FeedItem[]> {
       `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=6&q=${query}&key=${encodeURIComponent(apiKey)}`,
       { next: { revalidate: 3600 } },
     );
-    if (!response.ok) throw new Error(`YouTube-søk svarte med ${response.status}`);
+    if (!response.ok) throw new Error(`YouTube search returned ${response.status}`);
 
     const data = (await response.json()) as {
       items?: Array<{
@@ -123,7 +129,7 @@ async function loadYouTubeDiscoveries(): Promise<FeedItem[]> {
         {
           id: `discovery:${videoId}`,
           source: "mention" as const,
-          label: "Gjesteopptreden",
+          label: "Guest appearance",
           title: clean(snippet.title),
           description: clean(snippet.description ?? "").slice(0, 220),
           url: `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`,
@@ -209,13 +215,13 @@ async function loadMentions(): Promise<FeedItem[]> {
     return {
       id: `mention:${index}:${title}`,
       source: "mention",
-      label: "Omtale",
+      label: "Mention",
       title,
       description: source
-        ? `Funnet hos ${source}. Åpne originaltreffet for å lese eller se mer.`
-        : "Et nytt treff fra en ekstern kanal eller publikasjon.",
+        ? `Found via ${source}. Open the original result to read or watch more.`
+        : "A new result from an external channel or publication.",
       url: safeUrl(clean(value(item, "link")), "https://news.google.com/"),
-      author: source || "Ekstern kilde",
+      author: source || "External source",
       publishedAt: validDate(value(item, "pubDate")),
     };
   });
@@ -229,7 +235,7 @@ async function fetchText(url: string) {
     },
     next: { revalidate: 3600 },
   });
-  if (!response.ok) throw new Error(`Kilden svarte med ${response.status}`);
+  if (!response.ok) throw new Error(`The source returned ${response.status}`);
   return response.text();
 }
 

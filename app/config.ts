@@ -18,7 +18,7 @@ export const siteConfig = {
   people: [
     {
       name: "Matthieu Pageau",
-      role: "Forfatter · Biblical Symbolism",
+      role: "Author · Biblical Symbolism",
       monogram: "MP",
       primaryUrl: "https://substack.com/@matthieupageau",
       youtubeSearch:
@@ -28,7 +28,7 @@ export const siteConfig = {
     },
     {
       name: "Jonathan Pageau",
-      role: "Kunstner · The Symbolic World",
+      role: "Artist · The Symbolic World",
       monogram: "JP",
       primaryUrl: "https://www.youtube.com/c/JonathanPageau",
       youtubeSearch:
@@ -38,7 +38,7 @@ export const siteConfig = {
     },
     {
       name: "Jean-Philippe Marceau",
-      role: "Forfatter · Podkaster",
+      role: "Author · Podcasts",
       monogram: "JM",
       primaryUrl:
         "https://www.youtube.com/channel/UCZzlvx0HHYiPOJTEOU399WA",

@@ -11,37 +11,38 @@ export default async function Home() {
   return (
     <main>
       <header className="site-header">
-        <a className="brand" href="#top" aria-label="Symbolradar, til toppen">
+        <a className="brand" href="#top" aria-label="Symbolradar, back to top">
           <span className="brand-mark" aria-hidden="true">
             <i />
           </span>
           <span>Symbolradar</span>
         </a>
-        <nav aria-label="Hovedmeny">
-          <a href="#strom">Strøm</a>
-          <a href="#oppdag">Oppdag</a>
+        <nav aria-label="Main navigation">
+          <a href="#feed">Feed</a>
+          <a href="#discover">Discover</a>
           <a href="#x">X</a>
         </nav>
       </header>
 
       <section className="hero" id="top">
         <div className="hero-copy">
-          <p className="kicker">Et levende arkiv over symbolsk tenkning</p>
+          <p className="kicker">A living archive of symbolic thought</p>
           <h1>
-            Følg mønsteret
-            <span>mens det utfolder seg.</span>
+            Follow the pattern
+            <span>as it unfolds.</span>
           </h1>
           <p className="hero-intro">
-            Nye videoer, essays, samtaler og omtaler rundt Matthieu Pageau,
-            Jonathan Pageau og Jean-Philippe Marceau — samlet på ett sted.
+            New videos, essays, conversations, and mentions concerning Matthieu
+            Pageau, Jonathan Pageau, and Jean-Philippe Marceau — all in one
+            place.
           </p>
           <div className="hero-actions">
-            <a className="button button-dark" href="#strom">
-              Se siste nytt <span aria-hidden="true">↓</span>
+            <a className="button button-dark" href="#feed">
+              Explore the latest <span aria-hidden="true">↓</span>
             </a>
             <span className="updated">
               <i aria-hidden="true" />
-              Oppdatert {formatUpdated(generatedAt)}
+              Updated {formatUpdated(generatedAt)}
             </span>
           </div>
         </div>
@@ -54,11 +55,11 @@ export default async function Home() {
             <i />
             <span>ω</span>
           </div>
-          <p>språk · mønster · skapelse</p>
+          <p>language · pattern · creation</p>
         </div>
       </section>
 
-      <section className="people-strip" aria-label="Personer som følges">
+      <section className="people-strip" aria-label="People being followed">
         {siteConfig.people.map((person, index) => (
           <a href={person.primaryUrl} target="_blank" rel="noreferrer" key={person.name}>
             <span>0{index + 1}</span>
@@ -69,28 +70,28 @@ export default async function Home() {
         ))}
       </section>
 
-      <section className="feed-section" id="strom">
+      <section className="feed-section" id="feed">
         <div className="section-heading">
           <div>
-            <p className="kicker">Siste signaler</p>
-            <h2>Den løpende strømmen</h2>
+            <p className="kicker">Latest signals</p>
+            <h2>The ongoing feed</h2>
           </div>
           <p>
-            Offisielle kilder og bredere omtaler, sortert med det nyeste først.
-            Kildene sjekkes automatisk.
+            Guest appearances are shown first, followed by official sources and
+            broader mentions. Sources are checked automatically.
           </p>
         </div>
         <FeedExplorer items={items} warnings={warnings} />
       </section>
 
-      <section className="discovery-section" id="oppdag">
+      <section className="discovery-section" id="discover">
         <div className="discovery-copy">
-          <p className="kicker">Utenfor de faste kanalene</p>
-          <h2>Oppdag gjesteopptredener</h2>
+          <p className="kicker">Beyond the established channels</p>
+          <h2>Discover guest appearances</h2>
           <p>
-            Åpne ferdige, levende søk etter podkaster, intervjuer og omtaler på
-            YouTube og X. Dette gjør det mulig å finne nye kanaler uten
-            skraping eller en betalt datatjeneste.
+            Explore live searches for podcasts, interviews, and mentions on
+            YouTube and X. This makes it easier to find new channels without
+            scraping or a paid data service.
           </p>
         </div>
         <div className="discovery-grid">
@@ -101,10 +102,10 @@ export default async function Home() {
               <span>podcast · interview · guest</span>
               <div>
                 <a href={person.youtubeSearch} target="_blank" rel="noreferrer">
-                  Søk på YouTube <b aria-hidden="true">↗</b>
+                  Search YouTube <b aria-hidden="true">↗</b>
                 </a>
                 <a href={person.xSearch} target="_blank" rel="noreferrer">
-                  Søk på X <b aria-hidden="true">↗</b>
+                  Search X <b aria-hidden="true">↗</b>
                 </a>
               </div>
             </article>
@@ -113,11 +114,11 @@ export default async function Home() {
         <aside className="api-note">
           <span aria-hidden="true">✦</span>
           <div>
-            <strong>Vil du ha alle YouTube-treffene direkte i strømmen?</strong>
+            <strong>Automatic YouTube discovery is active</strong>
             <p>
-              En gratis YouTube API-nøkkel kan legges til senere. Siden er
-              allerede klargjort for dette, uten at nøkkelen blir synlig for
-              besøkende.
+              New guest appearances from across YouTube are added directly to
+              the feed. Searches refresh hourly, while the API key remains
+              hidden from visitors.
             </p>
           </div>
         </aside>
@@ -126,12 +127,12 @@ export default async function Home() {
       <section className="x-section" id="x">
         <div className="section-heading light">
           <div>
-            <p className="kicker">Direkte fra X</p>
-            <h2>De nyeste innleggene</h2>
+            <p className="kicker">Live from X</p>
+            <h2>The latest posts</h2>
           </div>
           <p>
-            Offisielle, innebygde profiltidslinjer. X kan sette
-            informasjonskapsler når disse lastes.
+            Official embedded profile timelines. X may set cookies when these
+            timelines load.
           </p>
         </div>
         <div className="x-grid">
@@ -143,7 +144,7 @@ export default async function Home() {
                   <strong>{profile.name}</strong>
                 </div>
                 <a href={profile.url} target="_blank" rel="noreferrer">
-                  Åpne på X ↗
+                  Open on X ↗
                 </a>
               </header>
               <a
@@ -153,7 +154,7 @@ export default async function Home() {
                 data-theme="light"
                 href={profile.url}
               >
-                Innlegg fra @{profile.handle}
+                Posts from @{profile.handle}
               </a>
             </article>
           ))}
@@ -168,14 +169,14 @@ export default async function Home() {
           <span>Symbolradar</span>
         </a>
         <p>
-          Viser metadata og korte utdrag. Alt innhold tilhører
-          originalutgiverne.
+          Displays metadata and short excerpts. All content belongs to its
+          original publishers.
         </p>
         <div>
           <a href="https://www.thesymbolicworld.com/" target="_blank" rel="noreferrer">
             The Symbolic World
           </a>
-          <a href="#top">Til toppen ↑</a>
+          <a href="#top">Back to top ↑</a>
         </div>
       </footer>
 
@@ -188,7 +189,7 @@ export default async function Home() {
 }
 
 function formatUpdated(value: string) {
-  return new Intl.DateTimeFormat("nb-NO", {
+  return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "short",
     hour: "2-digit",
